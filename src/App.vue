@@ -1,28 +1,66 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div class="treeview-wrapper">
+      <TreeView :entries="entries"/>
+    </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+import TreeView from "./components/TreeView.vue";
 
 export default {
   name: "app",
   components: {
-    HelloWorld
+    TreeView
+  },
+  data() {
+    return {
+      entries: [
+        {
+          id: "1",
+          text: "fooooo!",
+          open: true,
+          children: [
+            {
+              id: "2",
+              text: "baaaaa!",
+              open: false,
+              children: [
+                {
+                  id: "4",
+                  text: "4444444!",
+                  open: false,
+                },
+                {
+                  id: "5",
+                  text: "55555!",
+                  open: false,
+                }
+              ]
+            },
+            {
+              id: "3",
+              text: "quuuux!",
+              open: false,
+              children: [
+                {
+                  id: "6",
+                  text: "66666!",
+                  open: false,
+                }
+              ]
+            },
+          ]
+        },
+      ]
+    };
   }
 };
 </script>
 
-<style lang="scss">
-#app {
-  font-family: "Avenir", Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
+<style lang="scss" scoped>
+.treeview-wrapper {
+  width: 300px;
 }
 </style>

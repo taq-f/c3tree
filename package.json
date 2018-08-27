@@ -1,10 +1,13 @@
 {
-  "name": "C3Tree",
+  "name": "c3-tree",
   "version": "0.1.0",
   "private": true,
+  "main": "dist/C3Tree.common.js",
   "scripts": {
+    "start": "npm run serve",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build:library": "vue-cli-service build --target lib --name C3Tree src/components/TreeView.vue",
     "lint": "vue-cli-service lint",
     "test:unit": "vue-cli-service test:unit"
   },
