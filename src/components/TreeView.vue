@@ -4,6 +4,7 @@
       v-for="entry of parsedEntries"
       :key="entry.id"
       :entry="entry"
+      :drag-prop="dragProp"
       @select-entry="selectEntry">
     </tree-view-entry>
   </div>
@@ -21,7 +22,10 @@ export default {
   },
   data() {
     return {
-      parsedEntries: this.parse(this.entries),  
+      parsedEntries: this.parse(this.entries),
+      dragProp: {
+        entry: undefined,
+      },
     }
   },
   methods: {

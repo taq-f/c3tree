@@ -4,6 +4,13 @@
       :class="entryCssClass"
       :style="entryStyle"
       @click="handleClick(entry)"
+      draggable="true"
+      @dragstart="dragStart(entry, $event)"
+      @dragover="dragOver(entry, $event)"
+      @dragenter="dragEnter(entry, $event)"
+      @dragleave="dragLeave(entry, $event)"
+      @drop="drop(entry, $event)"
+      @dragend="dragEnd(entry, $event)"
       >
       <div class="background"></div>
       <div class="entry-items">
@@ -30,7 +37,9 @@
           v-for="child of entry.children"
           :key="child.id"
           :entry="child"
+          :drag-prop="dragProp"
           @select-entry="handleSelect"
+          @drag-end="childDragEnd"
         ></tree-view-entry>
       </div>
     </height-expand-transition>
@@ -49,6 +58,12 @@ export default {
   name: 'tree-view-entry',
   props: {
     entry: Object,
+    dragProp: Object,
+  },
+  data() {
+    return {
+      dropEffect: false,
+    }
   },
   computed: {
     entryStyle() {
@@ -58,7 +73,8 @@ export default {
       return {
         open: this.entry.open,
         'has-children': this.entry.children,
-        selected: this.entry.state === 'checked'
+        selected: this.entry.state === 'checked',
+        'drop-effect': this.dropEffect,
       }
     },
   },
@@ -108,6 +124,40 @@ export default {
           this.setState(child, state)
         }
       }
+    },
+    dragStart(entry, event) {
+      console.log('dragstart', entry.text, this.dragProp)
+      this.dragProp.entry = entry
+    },
+    dragOver(entry, event) {
+      event.preventDefault()
+      // console.log('dragover')
+      event.dataTransfer.dropEffect = 'move'
+      return false
+    },
+    dragEnter(entry, event) {
+      console.log('dragenter', entry.text)
+      this.dropEffect = true
+    },
+    dragLeave(entry, event) {
+      console.log('dragleave', entry.text)
+      this.dropEffect = false
+      return false
+    },
+    drop(entry, event) {
+      event.preventDefault()
+      console.log('drop', entry.text, this.dragProp.entry.text)
+      entry.children = [...entry.children, this.dragProp.entry]
+    },
+    dragEnd(entry, event) {
+      console.log('dragEnd', entry.text)
+      this.$emit('drag-end', entry)
+    },
+    childDragEnd(entry) {
+      console.log('childDragEnd', entry.text)
+      this.entry.children = this.entry.children.some(c => {
+        return c.id === entry.id
+      })
     }
   },
   mounted() {
@@ -186,6 +236,13 @@ export default {
 }
 .folder-icon {
   color: #009688;
+}
+
+[draggable] {
+  user-select: none;
+}
+.drop-effect {
+  background-color: red;
 }
 </style>
 

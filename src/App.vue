@@ -25,29 +25,26 @@ export default {
             {
               id: "2",
               text: "baaaaa!",
-              open: false,
+              open: true,
               children: [
                 {
                   id: "4",
                   text: "4444444!",
-                  open: false,
                 },
                 {
                   id: "5",
                   text: "55555!",
-                  open: false,
                 }
               ]
             },
             {
               id: "3",
               text: "quuuux!",
-              open: false,
+              open: true,
               children: [
                 {
                   id: "6",
                   text: "66666!",
-                  open: false,
                 }
               ]
             },
