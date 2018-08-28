@@ -25,7 +25,7 @@ export default {
   },
   data() {
     return {
-      parsedEntries: this.parse(this.entries),
+      parsedEntries: this.entries ? this.parse(this.entries) : [],
       dragProp: {
         entry: undefined,
         dropped: false
@@ -33,36 +33,27 @@ export default {
     };
   },
   methods: {
-    parse(originalEntries) {
-      const result = [];
-      for (const node of originalEntries) {
-        result.push(this.parseHelper(node, undefined));
+    parse(entries) {
+      for (const node of entries) {
+        this.parseHelper(node);
       }
-      return result;
+      return entries;
     },
-    parseHelper(node, parent) {
-      const newNode = {
-        id: node.id,
-        text: node.text,
-        state: "none"
-      };
-      if (node.children) {
-        newNode.open = node.open;
-        newNode.children = [];
-      }
-      if (parent) {
-        parent.children.push(newNode);
-      }
-
+    parseHelper(node) {
+      node.state = "none";
       if (node.children) {
         for (const child of node.children) {
-          this.parseHelper(child, newNode);
+          this.parseHelper(child);
         }
       }
-      return newNode;
     },
     selectEntry(entry) {
       console.log("click state", entry.text);
+    }
+  },
+  watch: {
+    entries() {
+      this.parsedEntries = this.parse(this.entries);
     }
   }
 };
