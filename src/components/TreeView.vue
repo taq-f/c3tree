@@ -5,6 +5,7 @@
       :key="entry.id"
       :level="0"
       :entry="entry"
+      :draggable="draggable"
       :drag-prop="dragProp"
       @select-entry="selectEntry">
     </tree-view-entry>
@@ -19,13 +20,15 @@ export default {
     TreeViewEntry
   },
   props: {
-    entries: Array
+    entries: Array,
+    draggable: Boolean
   },
   data() {
     return {
       parsedEntries: this.parse(this.entries),
       dragProp: {
-        entry: undefined
+        entry: undefined,
+        dropped: false
       }
     };
   },

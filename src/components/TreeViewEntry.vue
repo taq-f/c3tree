@@ -4,7 +4,7 @@
       :class="entryCssClass"
       :style="entryStyle"
       @click="handleClick(entry)"
-      draggable="true"
+      :draggable="draggable"
       @dragstart="dragStart(entry, $event)"
       @dragover="dragOver(entry, $event)"
       @dragenter="dragEnter(entry, $event)"
@@ -38,6 +38,7 @@
           :key="child.id"
           :entry="child"
           :level="level + 1"
+          :draggable="draggable"
           :drag-prop="dragProp"
           @select-entry="handleSelect"
           @drag-end="childDragEnd"
@@ -60,6 +61,7 @@ export default {
   props: {
     entry: Object,
     level: Number,
+    draggable: Boolean,
     dragProp: Object
   },
   data() {

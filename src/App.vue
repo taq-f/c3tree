@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="treeview-wrapper">
-      <TreeView :entries="entries"/>
+      <TreeView :entries="entries" :draggable="draggable"/>
     </div>
   </div>
 </template>
@@ -16,6 +16,7 @@ export default {
   },
   data() {
     return {
+      draggable: true,
       entries: [
         {
           id: "1",
