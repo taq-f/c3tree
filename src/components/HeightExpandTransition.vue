@@ -11,15 +11,15 @@
 
 <script>
 export default {
-  name: 'height-expand-transition',
+  name: "height-expand-transition",
   methods: {
     enter(element) {
       const width = getComputedStyle(element).width;
 
       element.style.width = width;
-      element.style.position = 'absolute';
-      element.style.visibility = 'hidden';
-      element.style.height = 'auto';
+      element.style.position = "absolute";
+      element.style.visibility = "hidden";
+      element.style.height = "auto";
 
       const height = getComputedStyle(element).height;
 
@@ -28,17 +28,17 @@ export default {
       element.style.visibility = null;
       element.style.height = 0;
 
-      requestAnimationFrame(()=> element.style.height = height)
+      requestAnimationFrame(() => (element.style.height = height));
     },
     afterEnter(element) {
-      element.style.height = 'auto'
+      element.style.height = "auto";
     },
     leave(element) {
-      const height = getComputedStyle(element).height
+      const height = getComputedStyle(element).height;
       element.style.height = height;
-      requestAnimationFrame(() => element.style.height = 0)
-    },
-  },
+      requestAnimationFrame(() => (element.style.height = 0));
+    }
+  }
 };
 </script>
 
@@ -54,4 +54,3 @@ export default {
   height: 0;
 }
 </style>
-

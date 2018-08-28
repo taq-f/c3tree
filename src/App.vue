@@ -29,11 +29,11 @@ export default {
               children: [
                 {
                   id: "4",
-                  text: "4444444!",
+                  text: "4444444!"
                 },
                 {
                   id: "5",
-                  text: "55555!",
+                  text: "55555!"
                 }
               ]
             },
@@ -44,12 +44,12 @@ export default {
               children: [
                 {
                   id: "6",
-                  text: "66666!",
+                  text: "66666!"
                 }
               ]
-            },
+            }
           ]
-        },
+        }
       ]
     };
   }

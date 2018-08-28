@@ -3,6 +3,7 @@
     <tree-view-entry
       v-for="entry of parsedEntries"
       :key="entry.id"
+      :level="0"
       :entry="entry"
       :drag-prop="dragProp"
       @select-entry="selectEntry">
@@ -11,7 +12,7 @@
 </template>
 
 <script>
-import TreeViewEntry from '@/components/TreeViewEntry.vue'
+import TreeViewEntry from "@/components/TreeViewEntry.vue";
 
 export default {
   components: {
@@ -24,39 +25,38 @@ export default {
     return {
       parsedEntries: this.parse(this.entries),
       dragProp: {
-        entry: undefined,
-      },
-    }
+        entry: undefined
+      }
+    };
   },
   methods: {
     parse(originalEntries) {
-      const result = []
+      const result = [];
       for (const node of originalEntries) {
-        result.push(this.parseHelper(node, undefined))
+        result.push(this.parseHelper(node, undefined));
       }
-      return result
+      return result;
     },
     parseHelper(node, parent) {
       const newNode = {
         id: node.id,
         text: node.text,
-        state: 'none',
-        level: parent ? parent.level + 1 : 0,
-      }
+        state: "none"
+      };
       if (node.children) {
-        newNode.open = node.open
-        newNode.children = []
+        newNode.open = node.open;
+        newNode.children = [];
       }
       if (parent) {
-        parent.children.push(newNode)
+        parent.children.push(newNode);
       }
 
       if (node.children) {
         for (const child of node.children) {
-          this.parseHelper(child, newNode)
+          this.parseHelper(child, newNode);
         }
       }
-      return newNode
+      return newNode;
     },
     selectEntry(entry) {
       console.log("click state", entry.text);
@@ -64,4 +64,3 @@ export default {
   }
 };
 </script>
-
