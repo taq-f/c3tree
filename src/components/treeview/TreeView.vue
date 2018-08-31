@@ -4,6 +4,7 @@
       v-for="entry of parsedEntries"
       :key="entry.id"
       :level="0"
+      :height="height"
       :entry="entry"
       :no-icon="noIcon"
       :no-check-icon="noCheckIcon"
@@ -35,6 +36,10 @@ export default {
     entryStateChange: {
       type: Function,
       default: () => {},
+    },
+    height: {
+      type: Number,
+      default: 30,
     },
   },
   data() {

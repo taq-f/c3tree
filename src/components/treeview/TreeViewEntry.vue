@@ -1,5 +1,6 @@
 <template>
-  <div class="wrapper">
+  <div>
+    <!-- An Entry -->
     <div class="entry"
       :style="entryStyle"
       :class="entryCssClass"
@@ -29,13 +30,16 @@
       </div>
     </div>
 
-    <!-- <height-expand-transition> -->
-    <transition name="expand" @before-enter="beforeEnter" @after-enter="afterEnter" @before-leave="beforeLeave" @after-leave="afterLeave" >
-      <div v-if="entry.open" class="children-container" :style="childrenContainerStyle">
+    <!-- Child Entries (List of this component recursively) -->
+    <!--   This child container is always visible for height transition -->
+    <div class="children-container" :style="childrenContainerStyle">
+      <transition-group name="expand" @before-enter="beforeChildrenEnter" @before-leave="beforeChildrenLeave">
         <tree-view-entry
+          v-if="entry.open"
           ref="children"
           v-for="child of entry.children"
           :key="child.id"
+          :height="height"
           :entry="child"
           :level="level + 1"
           :no-icon="noIcon"
@@ -52,24 +56,22 @@
             </slot>
           </template>
         </tree-view-entry>
-      </div>
-    </transition>
-    <!-- </height-expand-transition> -->
+      </transition-group>
+    </div>
   </div>
 </template>
 
 <script>
 import Checkbox from '@/components/treeview/Checkbox.vue'
-import HeightExpandTransition from '@/components/treeview/HeightExpandTransition.vue'
 
 export default {
   components: {
     Checkbox,
-    HeightExpandTransition,
   },
   name: 'tree-view-entry',
   props: {
     entry: Object,
+    height: Number,
     level: Number,
     noIcon: Boolean,
     noCheckIcon: Boolean,
@@ -79,7 +81,6 @@ export default {
   },
   data() {
     return {
-      height: 30,
       childHeight: 0,
       dropEffect: false,
     }
@@ -118,12 +119,6 @@ export default {
         }
       },
     },
-    // 'entry.open': {
-    //   deep: true,
-    //   handler(newVal, oldVal) {
-    //     this.handleGroupMaxHeight()
-    //   },
-    // },
   },
   methods: {
     /**
@@ -187,41 +182,64 @@ export default {
         }
       }
     },
-    handleGroupMaxHeight() {
+    /**
+     * Calculate and set child container's height
+     *
+     * When this entry is closed state, child height is just 0. When open,
+     * there need a little calculation.
+     */
+    setChildHeight() {
+      let childHeight = 0
       if (this.entry.open) {
         if (this.$refs.children) {
-          let childHeight = 0
           for (const child of this.$refs.children) {
             if (child.entry.children) {
+              // folder has its children and its own height
               childHeight += child.childHeight + child.height
             } else {
+              // leaf do not have children, so it takes only its own height.
               childHeight += child.height
             }
           }
-          this.childHeight = childHeight
         }
-      } else {
-        this.childHeight = 0
       }
+      this.childHeight = childHeight
       this.$emit('open-change')
     },
+    /**
+     * Handler for child open state change
+     *
+     * Child container height must be reevaluated when a child entry is
+     * opened or closed. And parent should know it too (emitting event).
+     */
     handleChildOpenChange() {
-      this.handleGroupMaxHeight()
+      this.setChildHeight()
       this.$emit('open-change')
     },
-    beforeEnter() {
-      console.log('BEFORE EBNTER', this.$refs.children.length)
+    /**
+     * Handler for child entries is rendered
+     *
+     * Adjusting child height should be triggered by open state change. But
+     * $refs.children is empty when "entry.open" becomes true since they are not
+     * mounted yet. Which means child height cannot be retrieved by watching
+     * "entry.open".
+     *
+     * So prepare a transition for child entries and use the events for
+     * trigering child height calculation. $refs.children exists when
+     * "before-enter" fires.
+     */
+    beforeChildrenEnter() {
+      this.setChildHeight()
     },
-    afterEnter() {
-      console.log('AFTER EBNTER', this.$refs.children.length)
-      // this.handleGroupMaxHeight()
-    },
-    beforeLeave() {
-      console.log('BEFORE Leave', this.$refs.children.length)
-    },
-    afterLeave() {
-      console.log('AFTER Leave', this.$refs.children.length)
-      // this.handleGroupMaxHeight()
+    /**
+     * Handler for child entries is removed from DOM
+     *
+     * Same here as "before-enter"; watching "entry.open = false" cannot
+     * have empty children state. "before-leave" might be the firstest
+     * timing when $refs.children becomes empty.
+     */
+    beforeChildrenLeave() {
+      this.setChildHeight()
     },
     dragStart(entry) {
       // register the entry starts being dragged,
@@ -283,7 +301,7 @@ export default {
   },
   mounted() {
     if (this.entry.children) {
-      this.handleGroupMaxHeight()
+      this.setChildHeight()
     }
   },
 }
@@ -355,7 +373,7 @@ export default {
 
 .children-container {
   overflow: hidden;
-  // transition: height 120ms ease;
+  transition: height 200ms ease;
 }
 
 [draggable] {
@@ -363,5 +381,12 @@ export default {
 }
 .drop-effect {
   background-color: red;
+}
+
+.expand-leave-active {
+  transition: opacity 0.5s;
+}
+.expand-leave-to {
+  opacity: 0;
 }
 </style>
