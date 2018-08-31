@@ -80,6 +80,6 @@ export default {
 
 <style lang="scss" scoped>
 .treeview-wrapper {
-  width: 300px;
+  width: 600px;
 }
 </style>

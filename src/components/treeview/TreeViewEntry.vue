@@ -29,10 +29,11 @@
       </div>
     </div>
 
-    <height-expand-transition>
-      <div class="children-container" v-if="entry.open">
+    <!-- <height-expand-transition> -->
+    <transition name="expand" @before-enter="beforeEnter" @after-enter="afterEnter" @before-leave="beforeLeave" @after-leave="afterLeave" >
+      <div v-if="entry.open" class="children-container" :style="childrenContainerStyle">
         <tree-view-entry
-          ref="childNodes"
+          ref="children"
           v-for="child of entry.children"
           :key="child.id"
           :entry="child"
@@ -42,6 +43,7 @@
           :draggable="draggable"
           :drag-prop="dragProp"
           :entry-state-change="entryStateChange"
+          @open-change="handleChildOpenChange"
           @entry-status-change="handleChildSelect"
           @drag-end="childDragEnd">
           <template slot-scope="_">
@@ -51,7 +53,8 @@
           </template>
         </tree-view-entry>
       </div>
-    </height-expand-transition>
+    </transition>
+    <!-- </height-expand-transition> -->
   </div>
 </template>
 
@@ -76,12 +79,17 @@ export default {
   },
   data() {
     return {
+      height: 30,
+      childHeight: 0,
       dropEffect: false,
     }
   },
   computed: {
     entryStyle() {
-      return { paddingLeft: `${this.level * 20}px` }
+      return {
+        height: `${this.height}px`,
+        paddingLeft: `${this.level * 20}px`,
+      }
     },
     entryCssClass() {
       return {
@@ -90,6 +98,11 @@ export default {
         selected: this.entry.state === 'checked',
         disabled: this.entry.disabled,
         'drop-effect': this.dropEffect,
+      }
+    },
+    childrenContainerStyle() {
+      return {
+        height: `${this.childHeight}px`,
       }
     },
   },
@@ -105,6 +118,12 @@ export default {
         }
       },
     },
+    // 'entry.open': {
+    //   deep: true,
+    //   handler(newVal, oldVal) {
+    //     this.handleGroupMaxHeight()
+    //   },
+    // },
   },
   methods: {
     /**
@@ -168,6 +187,42 @@ export default {
         }
       }
     },
+    handleGroupMaxHeight() {
+      if (this.entry.open) {
+        if (this.$refs.children) {
+          let childHeight = 0
+          for (const child of this.$refs.children) {
+            if (child.entry.children) {
+              childHeight += child.childHeight + child.height
+            } else {
+              childHeight += child.height
+            }
+          }
+          this.childHeight = childHeight
+        }
+      } else {
+        this.childHeight = 0
+      }
+      this.$emit('open-change')
+    },
+    handleChildOpenChange() {
+      this.handleGroupMaxHeight()
+      this.$emit('open-change')
+    },
+    beforeEnter() {
+      console.log('BEFORE EBNTER', this.$refs.children.length)
+    },
+    afterEnter() {
+      console.log('AFTER EBNTER', this.$refs.children.length)
+      // this.handleGroupMaxHeight()
+    },
+    beforeLeave() {
+      console.log('BEFORE Leave', this.$refs.children.length)
+    },
+    afterLeave() {
+      console.log('AFTER Leave', this.$refs.children.length)
+      // this.handleGroupMaxHeight()
+    },
     dragStart(entry) {
       // register the entry starts being dragged,
       // so that referenced afterward (from another entry).
@@ -226,12 +281,16 @@ export default {
       this.entry.children = this.entry.children.filter(c => c.id !== entry.id)
     },
   },
+  mounted() {
+    if (this.entry.children) {
+      this.handleGroupMaxHeight()
+    }
+  },
 }
 </script>
 
 <style lang="scss" scoped>
 .entry {
-  height: 28px;
   width: 100%;
   display: flex;
   align-items: center;
@@ -292,6 +351,11 @@ export default {
   &.disabled {
     opacity: 0.3;
   }
+}
+
+.children-container {
+  overflow: hidden;
+  // transition: height 120ms ease;
 }
 
 [draggable] {
