@@ -8,11 +8,11 @@
 
 <script>
 export default {
-  name: "checkbox",
+  name: 'checkbox',
   props: {
-    state: String
-  }
-};
+    state: String,
+  },
+}
 </script>
 
 <style lang="scss" scoped>

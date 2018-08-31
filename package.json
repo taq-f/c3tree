@@ -7,11 +7,12 @@
     "start": "npm run serve",
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "build:library": "vue-cli-service build --target lib --name C3Tree src/components/TreeView.vue",
+    "build:library": "vue-cli-service build --target lib --name c3tree src/components/treeview/TreeView.vue",
     "lint": "vue-cli-service lint",
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
+    "rxjs": "^6.2.2",
     "vue": "^2.5.17"
   },
   "devDependencies": {
