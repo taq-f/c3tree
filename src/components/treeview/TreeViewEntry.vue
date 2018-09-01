@@ -62,13 +62,36 @@
 </template>
 
 <script>
+import Vue from 'vue'
+import Component from 'vue-class-component'
 import Checkbox from '@/components/treeview/Checkbox.vue'
 
-export default {
+function switchState(fromState) {
+  switch (fromState) {
+    case 'none':
+      return 'checked'
+    case 'intermediate':
+      return 'checked'
+    case 'checked':
+      return 'none'
+    default:
+    // TODO error
+  }
+}
+
+function walk(entry, f) {
+  f(entry)
+  if (entry.children) {
+    for (const child of entry.children) {
+      walk(child, f)
+    }
+  }
+}
+
+@Component({
   components: {
     Checkbox,
   },
-  name: 'tree-view-entry',
   props: {
     entry: Object,
     height: Number,
@@ -78,34 +101,6 @@ export default {
     draggable: Boolean,
     dragProp: Object,
     entryStateChange: Function,
-  },
-  data() {
-    return {
-      childHeight: 0,
-      dropEffect: false,
-    }
-  },
-  computed: {
-    entryStyle() {
-      return {
-        height: `${this.height}px`,
-        paddingLeft: `${this.level * 20}px`,
-      }
-    },
-    entryCssClass() {
-      return {
-        open: this.entry.open,
-        'has-children': this.entry.children,
-        selected: this.entry.state === 'checked',
-        disabled: this.entry.disabled,
-        'drop-effect': this.dropEffect,
-      }
-    },
-    childrenContainerStyle() {
-      return {
-        height: `${this.childHeight}px`,
-      }
-    },
   },
   watch: {
     'entry.state': {
@@ -120,190 +115,216 @@ export default {
       },
     },
   },
-  methods: {
-    /**
-     * Toggle open/close state of this entry
-     */
-    toggleOpenClose() {
-      this.entry.open = !this.entry.open
-    },
-    /**
-     * Select this entry
-     */
-    select() {
-      if (this.entry.disabled) {
-        return
-      }
+})
+export default class TreeViewEntry extends Vue {
+  /**
+   * Height of child entries' container
+   */
+  childHeight = 0
 
-      let toState
-      switch (this.entry.state) {
-        case 'none':
-          toState = 'checked'
-          break
-        case 'intermediate':
-          toState = 'checked'
-          break
-        case 'checked':
-          toState = 'none'
-          break
-        default:
-          // TODO error
-          break
-      }
+  /**
+   * Enable drop effect
+   */
+  dropEffect = false
 
-      this.entryStateChange(this.entry)
-      this.setState(this.entry, toState)
-    },
-    /**
-     * Handle child's state change
-     */
-    handleChildSelect() {
-      // when check state of a child component changed,
-      // check to see if all/some/none of them are selected and
-      // change this own state depending on them.
-      const states = new Set(this.entry.children.map(c => c.state))
-      if (states.size > 1) {
-        this.entry.state = 'intermediate'
-      } else {
-        this.entry.state = this.entry.children[0].state
-      }
-    },
-    /**
-     * Set state of an entry.
-     *
-     * The states of children are also set recursively.
-     */
-    setState(entry, state) {
-      entry.state = state
-      if (entry.children) {
-        for (const child of entry.children) {
-          child.doNotWatch = true
-          this.setState(child, state)
-        }
-      }
-    },
-    /**
-     * Calculate and set child container's height
-     *
-     * When this entry is closed state, child height is just 0. When open,
-     * there need a little calculation.
-     */
-    setChildHeight() {
-      let childHeight = 0
-      if (this.entry.open) {
-        if (this.$refs.children) {
-          for (const child of this.$refs.children) {
-            if (child.entry.children) {
-              // folder has its children and its own height
-              childHeight += child.childHeight + child.height
-            } else {
-              // leaf do not have children, so it takes only its own height.
-              childHeight += child.height
-            }
-          }
-        }
-      }
-      this.childHeight = childHeight
-      this.$emit('open-change')
-    },
-    /**
-     * Handler for child open state change
-     *
-     * Child container height must be reevaluated when a child entry is
-     * opened or closed. And parent should know it too (emitting event).
-     */
-    handleChildOpenChange() {
-      this.setChildHeight()
-      this.$emit('open-change')
-    },
-    /**
-     * Handler for child entries is rendered
-     *
-     * Adjusting child height should be triggered by open state change. But
-     * $refs.children is empty when "entry.open" becomes true since they are not
-     * mounted yet. Which means child height cannot be retrieved by watching
-     * "entry.open".
-     *
-     * So prepare a transition for child entries and use the events for
-     * trigering child height calculation. $refs.children exists when
-     * "before-enter" fires.
-     */
-    beforeChildrenEnter() {
-      this.setChildHeight()
-    },
-    /**
-     * Handler for child entries is removed from DOM
-     *
-     * Same here as "before-enter"; watching "entry.open = false" cannot
-     * have empty children state. "before-leave" might be the firstest
-     * timing when $refs.children becomes empty.
-     */
-    beforeChildrenLeave() {
-      this.setChildHeight()
-    },
-    dragStart(entry) {
-      // register the entry starts being dragged,
-      // so that referenced afterward (from another entry).
-      this.dragProp.entry = entry
-      this.dragProp.dropped = false
-    },
-    dragOver(entry, event) {
-      event.preventDefault()
-      event.dataTransfer.dropEffect = 'move'
-      return false
-    },
-    dragEnter(entry, { target }) {
-      if (this.$refs.entry !== target) {
-        return
-      }
-      if (this.dragProp.entry === entry) {
-        // not allowed to drop to self.
-        return
-      } else if (!entry.children) {
-        // not allowed to drop into leaf.
-        return
-      }
-      this.dropEffect = true
-    },
-    dragLeave(entry, { target }) {
-      if (this.$refs.entry !== target) {
-        return
-      }
-      this.dropEffect = false
-    },
-    drop(entry, event) {
-      event.preventDefault()
+  /**
+   * Styles for entry tag
+   */
+  get entryStyle() {
+    return {
+      height: `${this.height}px`,
+      paddingLeft: `${this.level * 20}px`,
+    }
+  }
 
-      const dragging = this.dragProp.entry
-      if (dragging === entry) {
-        // not allowed to drop to self.
-        return
-      } else if (!entry.children) {
-        // not allowed to drop into leaf.
-        return
-      }
+  /**
+   * CSS classes for entry tag
+   */
+  get entryCssClass() {
+    return {
+      open: this.entry.open,
+      'has-children': this.entry.children,
+      selected: this.entry.state === 'checked',
+      disabled: this.entry.disabled,
+      'drop-effect': this.dropEffect,
+    }
+  }
 
-      this.dragProp.dropped = true
-      entry.children = [...entry.children, this.dragProp.entry]
-    },
-    dragEnd(entry) {
-      if (this.dragProp.dropped) {
-        // custom drag-end event should be fired when
-        // actual entry drop happened.
-        this.$emit('drag-end', entry)
-      }
-    },
-    childDragEnd(entry) {
-      // the entry has moved to another entry,
-      // so delete it from self children.
-      this.entry.children = this.entry.children.filter(c => c.id !== entry.id)
-    },
-  },
+  /**
+   * Styles for child entries container
+   */
+  get childrenContainerStyle() {
+    return {
+      height: `${this.childHeight}px`,
+    }
+  }
+
   mounted() {
     if (this.entry.children) {
       this.setChildHeight()
     }
-  },
+  }
+
+  /**
+   * Toggle open/close state of this entry
+   */
+  toggleOpenClose() {
+    this.entry.open = !this.entry.open
+  }
+
+  /**
+   * Select this entry
+   */
+  select() {
+    if (this.entry.disabled) {
+      return
+    }
+    const newState = switchState(this.entry.state)
+    this.entryStateChange(this.entry)
+    walk(this.entry, entry => (entry.state = newState))
+  }
+
+  /**
+   * Handle child entry's state change
+   */
+  handleChildSelect() {
+    // when check state of a child component changed, check to see if
+    // all/some/none of them are selected and change this own state
+    // depending on them. The watcher tells it to parent.
+    const states = new Set(this.entry.children.map(c => c.state))
+    if (states.size > 1) {
+      this.entry.state = 'intermediate'
+    } else {
+      this.entry.state = this.entry.children[0].state
+    }
+  }
+
+  /**
+   * Calculate and set child container's height
+   *
+   * When this entry is closed state, child height is just 0. When open,
+   * there need a little calculation.
+   */
+  setChildHeight() {
+    let childHeight = 0
+    if (this.entry.open) {
+      if (this.$refs.children) {
+        for (const child of this.$refs.children) {
+          if (child.entry.children) {
+            // folder has its children and its own height
+            childHeight += child.childHeight + child.height
+          } else {
+            // leaf do not have children, so it takes only its own height.
+            childHeight += child.height
+          }
+        }
+      }
+    }
+    this.childHeight = childHeight
+    this.$emit('open-change')
+  }
+
+  /**
+   * Handler for child open state change
+   *
+   * Child container height must be reevaluated when a child entry is
+   * opened or closed. And parent should know it too (emitting event).
+   */
+  handleChildOpenChange() {
+    this.setChildHeight()
+    this.$emit('open-change')
+  }
+
+  /**
+   * Handler for child entries is rendered
+   *
+   * Adjusting child height should be triggered by open state change. But
+   * $refs.children is empty when "entry.open" becomes true since they are not
+   * mounted yet. Which means child height cannot be retrieved by watching
+   * "entry.open".
+   *
+   * So prepare a transition for child entries and use the events for
+   * trigering child height calculation. $refs.children exists when
+   * "before-enter" fires.
+   */
+  beforeChildrenEnter() {
+    this.setChildHeight()
+  }
+
+  /**
+   * Handler for child entries is removed from DOM
+   *
+   * Same here as "before-enter"; watching "entry.open = false" cannot
+   * have empty children state. "before-leave" might be the firstest
+   * timing when $refs.children becomes empty.
+   */
+  beforeChildrenLeave() {
+    this.setChildHeight()
+  }
+
+  dragStart(entry) {
+    // register the entry starts being dragged,
+    // so that referenced afterward (from another entry).
+    this.dragProp.entry = entry
+    this.dragProp.dropped = false
+  }
+
+  dragOver(entry, event) {
+    event.preventDefault()
+    event.dataTransfer.dropEffect = 'move'
+    return false
+  }
+
+  dragEnter(entry, { target }) {
+    if (this.$refs.entry !== target) {
+      return
+    }
+    if (this.dragProp.entry === entry) {
+      // not allowed to drop to self.
+      return
+    } else if (!entry.children) {
+      // not allowed to drop into leaf.
+      return
+    }
+    this.dropEffect = true
+  }
+
+  dragLeave(entry, { target }) {
+    if (this.$refs.entry !== target) {
+      return
+    }
+    this.dropEffect = false
+  }
+
+  drop(entry, event) {
+    event.preventDefault()
+
+    const dragging = this.dragProp.entry
+    if (dragging === entry) {
+      // not allowed to drop to self.
+      return
+    } else if (!entry.children) {
+      // not allowed to drop into leaf.
+      return
+    }
+
+    this.dragProp.dropped = true
+    entry.children = [...entry.children, this.dragProp.entry]
+  }
+
+  dragEnd(entry) {
+    if (this.dragProp.dropped) {
+      // custom drag-end event should be fired when
+      // actual entry drop happened.
+      this.$emit('drag-end', entry)
+    }
+  }
+
+  childDragEnd(entry) {
+    // the entry has moved to another entry,
+    // so delete it from self children.
+    this.entry.children = this.entry.children.filter(c => c.id !== entry.id)
+  }
 }
 </script>
 
