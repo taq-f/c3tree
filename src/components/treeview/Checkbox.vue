@@ -1,8 +1,8 @@
 <template>
 <span :class="state">
-  <i class="icon fas fa-check-square checked"></i>
-  <i class="icon far fa-minus-square intermediate"></i>
-  <i class="icon far fa-square none"></i>
+  <font-awesome-icon v-if="state === 'checked'" icon="check-square" />
+  <font-awesome-icon v-else-if="state === 'none'" :icon="['far', 'square']" />
+  <font-awesome-icon v-else icon="minus-square" />
 </span>
 </template>
 
@@ -14,26 +14,3 @@ export default {
   },
 }
 </script>
-
-<style lang="scss" scoped>
-.icon {
-  display: none;
-}
-span {
-  &.checked {
-    .checked {
-      display: inherit;
-    }
-  }
-  &.intermediate {
-    .intermediate {
-      display: inherit;
-    }
-  }
-  &.none {
-    .none {
-      display: inherit;
-    }
-  }
-}
-</style>

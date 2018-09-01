@@ -12,16 +12,16 @@
       @drop="drop(entry, $event)"
       @dragend="dragEnd(entry, $event)"
       ref="entry">
-      <div class="entry-element caret" @click.stop="toggleOpenClose">
-        <i class="icon-caret icon-close fas fa-fw fa-caret-right"></i>
-        <i class="icon-caret icon-open fas fa-fw fa-caret-down"></i>
+      <div v-if="entry.children" class="entry-element caret" @click.stop="toggleOpenClose">
+        <font-awesome-icon v-if="!entry.open" icon="caret-right" class="fa-fw" />
+        <font-awesome-icon v-if="entry.open" icon="caret-down" class="fa-fw" />
       </div>
       <div v-if="!noCheckIcon" class="entry-element check" @click="select">
         <checkbox :state="entry.state"></checkbox>
       </div>
       <div v-if="!noIcon && entry.children" class="entry-element icon-folder" @click="select">
-        <i class="folder-icon folder-close fas fa-fw fa-folder"></i>
-        <i class="folder-icon folder-open fas fa-fw fa-folder-open"></i>
+        <font-awesome-icon v-if="!entry.open" icon="folder" class="fa-fw" />
+        <font-awesome-icon v-if="entry.open" icon="folder-open" class="fa-fw" />
       </div>
       <div class="entry-element" @click="select">
         <slot :vm="this" :entry="entry">
@@ -67,6 +67,29 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import Checkbox from '@/components/treeview/Checkbox.vue'
 
+import { library } from '@fortawesome/fontawesome-svg-core'
+import {
+  faCaretRight,
+  faCaretDown,
+  faFolder,
+  faFolderOpen,
+  faCheckSquare,
+  faMinusSquare,
+} from '@fortawesome/free-solid-svg-icons'
+import { faSquare } from '@fortawesome/free-regular-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
+library.add(
+  faCaretRight,
+  faCaretDown,
+  faFolder,
+  faFolderOpen,
+  faCheckSquare,
+  faMinusSquare,
+  faSquare
+)
+Vue.component('font-awesome-icon', FontAwesomeIcon)
+
 function switchState(fromState) {
   switch (fromState) {
     case 'none':
@@ -75,8 +98,6 @@ function switchState(fromState) {
       return 'checked'
     case 'checked':
       return 'none'
-    default:
-    // TODO error
   }
 }
 
@@ -341,27 +362,6 @@ export default class TreeViewEntry extends Vue {
   white-space: nowrap;
   transition: background-color 120ms ease;
 
-  &.has-children {
-    &.open {
-      .icon-close,
-      .folder-close {
-        display: none;
-      }
-    }
-    &:not(.open) {
-      .icon-open,
-      .folder-open {
-        display: none;
-      }
-    }
-  }
-  &:not(.has-children) {
-    .icon-caret,
-    .folder-icon {
-      display: none;
-    }
-  }
-
   .entry-element:not(:first-of-type) {
     margin-left: 10px;
   }
@@ -408,6 +408,9 @@ export default class TreeViewEntry extends Vue {
   background-color: red;
 }
 
+// Since height transition of child entries container is done by simple
+// CSS transition, Vue transition just plays a role not to disapper child
+// entries immediately.
 .expand-leave-active {
   transition: opacity 0.5s;
 }
