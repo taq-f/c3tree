@@ -33,30 +33,31 @@
     <!-- Child Entries (List of this component recursively) -->
     <!--   This child container is always visible for height transition -->
     <div class="children-container" :style="childrenContainerStyle">
-      <transition-group name="expand" @before-enter="beforeChildrenEnter" @before-leave="beforeChildrenLeave">
-        <tree-view-entry
-          v-if="entry.open"
-          ref="children"
-          v-for="child of entry.children"
-          :key="child.id"
-          :height="height"
-          :entry="child"
-          :level="level + 1"
-          :no-icon="noIcon"
-          :no-check-icon="noCheckIcon"
-          :draggable="draggable"
-          :drag-prop="dragProp"
-          :entry-state-change="entryStateChange"
-          @open-change="handleChildOpenChange"
-          @entry-status-change="handleChildSelect"
-          @drag-end="childDragEnd">
-          <template slot-scope="_">
-            <slot :vm="_.vm" :entry="_.entry" >
-              {{ _.entry.text }}
-            </slot>
-          </template>
-        </tree-view-entry>
-      </transition-group>
+      <transition name="expand" @before-enter="beforeChildrenEnter" @before-leave="beforeChildrenLeave">
+        <div v-if="entry.open">
+          <tree-view-entry
+            ref="children"
+            v-for="child of entry.children"
+            :key="child.id"
+            :height="height"
+            :entry="child"
+            :level="level + 1"
+            :no-icon="noIcon"
+            :no-check-icon="noCheckIcon"
+            :draggable="draggable"
+            :drag-prop="dragProp"
+            :entry-state-change="entryStateChange"
+            @open-change="handleChildOpenChange"
+            @entry-status-change="handleChildSelect"
+            @drag-end="childDragEnd">
+            <template slot-scope="_">
+              <slot :vm="_.vm" :entry="_.entry" >
+                {{ _.entry.text }}
+              </slot>
+            </template>
+          </tree-view-entry>
+        </div>
+      </transition>
     </div>
   </div>
 </template>
@@ -94,7 +95,10 @@ function walk(entry, f) {
   },
   props: {
     entry: Object,
-    height: Number,
+    height: {
+      type: Number,
+      default: 30,
+    },
     level: Number,
     noIcon: Boolean,
     noCheckIcon: Boolean,

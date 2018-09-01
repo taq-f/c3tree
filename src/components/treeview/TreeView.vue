@@ -4,7 +4,7 @@
       v-for="entry of parsedEntries"
       :key="entry.id"
       :level="0"
-      :height="height"
+      :height="entryHeight"
       :entry="entry"
       :no-icon="noIcon"
       :no-check-icon="noCheckIcon"
@@ -25,6 +25,16 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import TreeViewEntry from '@/components/treeview/TreeViewEntry.vue'
 
+/**
+ * Get ID assigned to each entry when not specified
+ */
+let psuedoId = 0
+function getId() {
+  const id = psuedoId.toString()
+  psuedoId++
+  return id
+}
+
 @Component({
   components: {
     TreeViewEntry,
@@ -38,73 +48,63 @@ import TreeViewEntry from '@/components/treeview/TreeViewEntry.vue'
       type: Function,
       default: () => {},
     },
-    height: {
-      type: Number,
-      default: 30,
-    },
+    entryHeight: Number,
   },
 })
 export default class TreeView extends Vue {
+  /**
+   * Property holding drag and drop information
+   */
   dragProp = {
     entry: undefined,
     dropped: false,
   }
 
-  psuedoId = 0
-
+  /**
+   * Entries array that is actually passed to entry components
+   */
   get parsedEntries() {
-    return this.parse(this.entries || [])
-  }
-
-  selectEntry(id) {
-    const entry = this.cache.get(id)
-    if (entry) {
-      entry.state = 'checked'
-    }
-  }
-
-  parse(entries) {
-    for (const node of entries) {
-      this.parseHelper(node, false)
+    const entries = this.entries || []
+    for (const entry of entries) {
+      this.parse(entry, false)
     }
     return entries
   }
 
-  parseHelper(node, isAncestorChecked) {
-    if (!node.hasOwnProperty('id')) {
+  /**
+   * Walk through entries and set necessary properties, such as state
+   *
+   * @param entry {Object} - An entry
+   * @param isParentSelected {Boolean} - if parent is checked or not. A checked parent means this entry must be checked event given data is not "checked" state.
+   */
+  parse(entry, isParentSelected) {
+    if (!entry.hasOwnProperty('id')) {
       // ID does not need to be reactive since it won't change
-      node.id = this.psuedoId.toString()
-      this.psuedoId++
+      entry.id = getId()
     }
-    if (!node.hasOwnProperty('state')) {
-      this.$set(node, 'state', 'none')
+    if (!entry.hasOwnProperty('state')) {
+      this.$set(entry, 'state', 'none')
     }
-    if (!node.hasOwnProperty('open')) {
-      Vue.set(node, 'open', false)
+    if (!entry.hasOwnProperty('open')) {
+      this.$set(entry, 'open', false)
     }
-    if (!node.hasOwnProperty('disabled')) {
-      Vue.set(node, 'disabled', false)
+    if (!entry.hasOwnProperty('disabled')) {
+      this.$set(entry, 'disabled', false)
     }
 
-    if (isAncestorChecked) {
+    if (isParentSelected) {
       // the flag is not reset once becomes true
-      node.state = 'checked'
+      entry.state = 'checked'
     } else {
-      // if the flag is still false, override it by this node state
-      isAncestorChecked = node.state === 'checked'
+      // if the flag is still false, override it by this entry state
+      isParentSelected = entry.state === 'checked'
     }
 
-    this.cache.set(node.id, node)
-
-    if (node.children) {
-      for (const child of node.children) {
-        this.parseHelper(child, isAncestorChecked)
+    if (entry.children) {
+      for (const child of entry.children) {
+        this.parse(child, isParentSelected)
       }
     }
-  }
-
-  created() {
-    this.cache = new Map()
   }
 }
 </script>
