@@ -67,29 +67,6 @@ import Vue from 'vue'
 import Component from 'vue-class-component'
 import Checkbox from '@/components/treeview/Checkbox.vue'
 
-import { library } from '@fortawesome/fontawesome-svg-core'
-import {
-  faCaretRight,
-  faCaretDown,
-  faFolder,
-  faFolderOpen,
-  faCheckSquare,
-  faMinusSquare,
-} from '@fortawesome/free-solid-svg-icons'
-import { faSquare } from '@fortawesome/free-regular-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-
-library.add(
-  faCaretRight,
-  faCaretDown,
-  faFolder,
-  faFolderOpen,
-  faCheckSquare,
-  faMinusSquare,
-  faSquare
-)
-Vue.component('font-awesome-icon', FontAwesomeIcon)
-
 function switchState(fromState) {
   switch (fromState) {
     case 'none':
@@ -355,23 +332,22 @@ export default class TreeViewEntry extends Vue {
 
 <style lang="scss" scoped>
 .entry {
-  width: 100%;
   display: flex;
   align-items: center;
   position: relative;
   white-space: nowrap;
-  transition: background-color 120ms ease;
 
   .entry-element:not(:first-of-type) {
-    margin-left: 10px;
+    padding-left: 10px;
   }
 
   .entry-element {
+    cursor: pointer;
+
     &.caret {
       flex: 0 0 20px;
       font-size: 16px;
       color: #546e7a;
-      cursor: pointer;
     }
     &.check {
       color: #607d8b;

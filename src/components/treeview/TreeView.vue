@@ -24,6 +24,7 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import TreeViewEntry from '@/components/treeview/TreeViewEntry.vue'
+import '@/icons'
 
 /**
  * Get ID assigned to each entry when not specified
