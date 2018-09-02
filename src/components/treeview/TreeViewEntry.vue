@@ -337,12 +337,13 @@ export default class TreeViewEntry extends Vue {
   position: relative;
   white-space: nowrap;
 
-  .entry-element:not(:first-of-type) {
-    padding-left: 10px;
-  }
-
   .entry-element {
     cursor: pointer;
+
+    padding-left: 10px;
+    &:last-of-type {
+      padding-right: 10px;
+    }
 
     &.caret {
       flex: 0 0 20px;
