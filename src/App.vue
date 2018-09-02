@@ -61,8 +61,7 @@ export default {
     },
   },
   mounted() {
-    fetch('tree_small.json')
-      // fetch('tree_large.json')
+    fetch('tree.json')
       .then(r => r.json())
       .then(json => (this.entries = json))
   },

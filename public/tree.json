@@ -1,0 +1,100 @@
+[
+  {
+    "text": "public",
+    "children": [
+      {
+        "text": "favicon.ico"
+      },
+      {
+        "text": "index.html"
+      },
+      {
+        "text": "tree.json"
+      },
+      {
+        "text": "tree_small.json"
+      }
+    ]
+  },
+  {
+    "text": "src",
+    "children": [
+      {
+        "text": "assets",
+        "children": [
+          {
+            "text": "logo.png"
+          }
+        ]
+      },
+      {
+        "text": "components",
+        "children": [
+          {
+            "text": "treeview",
+            "children": [
+              {
+                "text": "Checkbox.vue"
+              },
+              {
+                "text": "TreeView.vue"
+              },
+              {
+                "text": "TreeViewEntry.vue"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "text": "App.vue"
+      },
+      {
+        "text": "main.js"
+      }
+    ]
+  },
+  {
+    "text": "tests",
+    "children": [
+      {
+        "text": "unit",
+        "children": [
+          {
+            "text": ".eslintrc.js"
+          },
+          {
+            "text": "HelloWorld.spec.js"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "text": ".browserslistrc"
+  },
+  {
+    "text": ".eslintrc.js"
+  },
+  {
+    "text": ".gitignore"
+  },
+  {
+    "text": "README.md"
+  },
+  {
+    "text": "babel.config.js"
+  },
+  {
+    "text": "jest.config.js"
+  },
+  {
+    "text": "package-lock.json"
+  },
+  {
+    "text": "package.json"
+  },
+  {
+    "text": "postcss.config.js"
+  }
+]
